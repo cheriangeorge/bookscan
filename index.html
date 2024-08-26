@@ -35,6 +35,10 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #555; 
   }
+
+  #video {
+    /* transition: opacity .1s ease-in-out; */
+    }
   </style>
 </head>
 
@@ -49,7 +53,7 @@
 
       <div>
         <a class="button" id="startButton">Start</a>
-        <a class="button" id="resetButton">Reset</a>
+        <a class="button" id="resetButton">Stop</a>
       </div>
 
       <div>
@@ -74,9 +78,10 @@
       </div>
       <br/>
       <div id="bookList" style="display:block;width:300px;border: 1px solid gray;border-radius:10px;padding:10px;">
-        
-        <label>Scanned Books:</label>
-        <ul id="bookList" style="max-height:300px;overflow-y:scroll;"></ul>
+        <div style="max-height:300px;overflow-y:scroll;">
+          <label>Scanned Books:</label>
+          <ul id="bookList"></ul>
+        </div>
       </div>
 
     </section>
@@ -125,7 +130,17 @@
         ul.appendChild(li);
     }
 
+    function captureISBNtransition(){
+      document.getElementById("video").style.opacity=0.6;
+      document.getElementById("video").style.border="1 px solid pink";
+      setTimeout(function() {
+        document.getElementById("video").style.opacity=1.0;
+        document.getElementById("video").style.border="1 px solid grey";
+      }, 500);
+    }
+
     let ScannedISBNs = []; // Variable to store the scanned ISBNs
+    let BookDataList = []; // Variable to store the book data
     window.addEventListener('load', function () {
       let selectedDeviceId;
       const codeReader = new ZXing.BrowserMultiFormatReader()
@@ -154,12 +169,15 @@
             codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
               if (result) {
                 const scannedISBN = result.text;
+                captureISBNtransition();
                 
                 if (!ScannedISBNs.includes(scannedISBN)) {
                   ScannedISBNs.push(scannedISBN);
                   // console.log(result)
                   document.getElementById('result').textContent = result.text
+                  
                   document.getElementById('book_title').textContent = "Fetching ...";
+                  
                   fetchBookInfo(result.text)
                  }
                 console.log(ScannedISBNs);
