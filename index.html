@@ -14,6 +14,28 @@
     href="https://unpkg.com/normalize.css@8.0.0/normalize.css">
   <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
     href="https://unpkg.com/milligram@1.3.0/dist/milligram.min.css">
+  <style>
+  /* width */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #fcfcfc; 
+    opacity: 0.0;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888; 
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
+  </style>
 </head>
 
 <body>
@@ -36,16 +58,26 @@
 
       <div id="sourceSelectPanel" style="display:none">
         <label for="sourceSelect">Change video source:</label>
-        <select id="sourceSelect" style="max-width:400px">
+        <select id="sourceSelect" style="max-width:300px">
         </select>
       </div>
 
-      <label>Scanned ISBN:</label>
-      <pre><code id="result"></code></pre>
-
-      <label>Scanned Books:</label>
-      <ul id="bookList"></ul>
-      
+      <div id="scanStatus" style="display:block;width:300px;border: 1px solid gray;border-radius:10px;padding:10px;">
+        <div>
+          <label>Scanned ISBN:</label>
+          <pre><code id="result"></code></pre>
+        </div>
+        <div>
+          <label>Book:</label>
+          <pre><code id="book_title"></code></pre>
+        </div>
+      </div>
+      <br/>
+      <div id="bookList" style="display:block;width:300px;border: 1px solid gray;border-radius:10px;padding:10px;">
+        
+        <label>Scanned Books:</label>
+        <ul id="bookList" style="max-height:300px;overflow-y:scroll;"></ul>
+      </div>
 
     </section>
 
@@ -71,8 +103,10 @@
                     displayBookInfo(bookData);
                     console.log(bookData.title);
                     // document.getElementById('test').innerHTML = bookData;
+                    document.getElementById('book_title').innerHTML = bookData.title;
                 } else {
                     console.log("Book data not found.");
+                    document.getElementById('book_title').innerHTML = "Not found.";
                 }
             })
             .catch(err => console.error("Error fetching book data:", err));
@@ -125,6 +159,7 @@
                   ScannedISBNs.push(scannedISBN);
                   // console.log(result)
                   document.getElementById('result').textContent = result.text
+                  document.getElementById('book_title').textContent = "Fetching ...";
                   fetchBookInfo(result.text)
                  }
                 console.log(ScannedISBNs);
@@ -140,6 +175,7 @@
           document.getElementById('resetButton').addEventListener('click', () => {
             codeReader.reset()
             document.getElementById('result').textContent = '';
+            document.getElementById('book_title').innerHTML = "";
             console.log('Reset.')
           })
 
