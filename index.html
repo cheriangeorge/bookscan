@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="ZXing for JS">
+
+  <title>ISBN Scanner</title>
+
+  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
+    href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
+    href="https://unpkg.com/normalize.css@8.0.0/normalize.css">
+  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
+    href="https://unpkg.com/milligram@1.3.0/dist/milligram.min.css">
+</head>
+
+<body>
+
+  <main class="wrapper" style="padding-top:2em">
+
+    <section class="container" id="demo-content">
+      <h1 class="title">ISBN Scanner</h1>
+      <h5 class="title">Scan 1D/2D Code from Video Camera</h5>
+
+
+      <div>
+        <a class="button" id="startButton">Start</a>
+        <a class="button" id="resetButton">Reset</a>
+      </div>
+
+      <div>
+        <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
+      </div>
+
+      <div id="sourceSelectPanel" style="display:none">
+        <label for="sourceSelect">Change video source:</label>
+        <select id="sourceSelect" style="max-width:400px">
+        </select>
+      </div>
+
+      <label>Scanned ISBN:</label>
+      <pre><code id="result"></code></pre>
+
+      <label>Scanned Books:</label>
+      <ul id="bookList"></ul>
+      
+
+    </section>
+
+    <footer class="footer">
+      <section class="container">
+        <p>ISBN Scanner</p>
+      </section>
+    </footer>
+
+  </main>
+
+  <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+  <script type="text/javascript">
+
+    // Function to fetch book information from the Open Library API
+    function fetchBookInfo(isbn) {
+        fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`)
+            .then(response => response.json())
+            .then(data => {
+                const bookData = data[`ISBN:${isbn}`];
+
+                if (bookData) {
+                    displayBookInfo(bookData);
+                    console.log(bookData.title);
+                    // document.getElementById('test').innerHTML = bookData;
+                } else {
+                    console.log("Book data not found.");
+                }
+            })
+            .catch(err => console.error("Error fetching book data:", err));
+    }
+    // Function to display the book information
+    function displayBookInfo(bookData) {
+        const ul = document.getElementById('bookList');
+        const li = document.createElement('li');
+
+        // Display the book's title, author, and other information
+        li.innerHTML = `<strong>${bookData.title}</strong><br>
+                        ${bookData.authors ? `Author: ${bookData.authors.map(author => author.name).join(', ')}` : ''}<br>
+                        ${bookData.publish_date ? `Published: ${bookData.publish_date}` : ''}`;
+
+        // Append the new list item to the list
+        ul.appendChild(li);
+    }
+
+    let ScannedISBNs = []; // Variable to store the scanned ISBNs
+    window.addEventListener('load', function () {
+      let selectedDeviceId;
+      const codeReader = new ZXing.BrowserMultiFormatReader()
+      console.log('ZXing code reader initialized')
+      codeReader.listVideoInputDevices()
+        .then((videoInputDevices) => {
+          const sourceSelect = document.getElementById('sourceSelect')
+          selectedDeviceId = videoInputDevices[0].deviceId
+          if (videoInputDevices.length >= 1) {
+            videoInputDevices.forEach((element) => {
+              const sourceOption = document.createElement('option')
+              sourceOption.text = element.label
+              sourceOption.value = element.deviceId
+              sourceSelect.appendChild(sourceOption)
+            })
+
+            sourceSelect.onchange = () => {
+              selectedDeviceId = sourceSelect.value;
+            };
+
+            const sourceSelectPanel = document.getElementById('sourceSelectPanel')
+            sourceSelectPanel.style.display = 'block'
+          }
+
+          document.getElementById('startButton').addEventListener('click', () => {
+            codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
+              if (result) {
+                const scannedISBN = result.text;
+                
+                if (!ScannedISBNs.includes(scannedISBN)) {
+                  ScannedISBNs.push(scannedISBN);
+                  // console.log(result)
+                  document.getElementById('result').textContent = result.text
+                  fetchBookInfo(result.text)
+                 }
+                console.log(ScannedISBNs);
+              }
+              if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err)
+                document.getElementById('result').textContent = err
+              }
+            })
+            console.log(`Started continous decode from camera with id ${selectedDeviceId}`)
+          })
+
+          document.getElementById('resetButton').addEventListener('click', () => {
+            codeReader.reset()
+            document.getElementById('result').textContent = '';
+            console.log('Reset.')
+          })
+
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    })
+
+    
+    
+  </script>
+
+</body>
+
+</html>
