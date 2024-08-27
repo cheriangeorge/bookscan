@@ -65,7 +65,7 @@
 
       <div id="scanStatus" style="display:block;width:300px;border: 1px solid gray;border-radius:10px;padding:10px;">
         <div>
-          <label>Scanned ISBN:</label>
+          <label id="BigDot" style="color:grey;">⬤ </label><label>Scanned ISBN:</label>
           <pre><code id="result"></code></pre>
         </div>
         <div>
@@ -109,8 +109,10 @@
                   console.log(BookDataList);
                     // document.getElementById('test').innerHTML = bookData;
                     document.getElementById('book_title').innerHTML = bookData.title;
+                    document.getElementById("BigDot").style.color="grey";
                 } else {
                     console.log("Book data not found.");
+                    document.getElementById("BigDot").style.color="grey";
                     document.getElementById('book_title').innerHTML = "Not found.";
                 }
             })
@@ -131,7 +133,7 @@
     }
 
     function captureISBNtransition(){
-      document.getElementById("video").style.opacity=0.6;
+      document.getElementById("BigDot").style.color="red";
       document.getElementById("video").style.border="1 px solid pink";
       setTimeout(function() {
         document.getElementById("video").style.opacity=1.0;
@@ -218,7 +220,8 @@
             codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
               if (result) {
                 const scannedISBN = result.text;
-                captureISBNtransition();
+                document.getElementById("BigDot").style.color="red";
+                // captureISBNtransition();
                 
                 if (!ScannedISBNs.includes(scannedISBN)) {
                   ScannedISBNs.push(scannedISBN);
