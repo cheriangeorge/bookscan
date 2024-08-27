@@ -47,10 +47,7 @@
   <main class="wrapper" style="padding-top:2em">
 
     <section class="container" id="demo-content">
-      <h1 class="title">ISBN Scanner</h1>
-      <h5 class="title">Scan 1D/2D Code from Video Camera</h5>
-
-
+      <h1 class="title">Book Scan</h1>      
       <div>
         <a class="button" id="startButton">Start</a>
         <a class="button" id="resetButton">Stop</a>
@@ -79,16 +76,16 @@
       <br/>
       <div id="bookList" style="display:block;width:300px;border: 1px solid gray;border-radius:10px;padding:10px;">
         <div style="max-height:300px;overflow-y:scroll;">
-          <label>Scanned Books:</label>
+          <span><label>Scanned Books:</label> <a class="button" id="downloadButton">Download CSV</a></span>
           <ul id="bookList"></ul>
         </div>
       </div>
 
     </section>
-
+    <hr/>
     <footer class="footer">
       <section class="container">
-        <p>ISBN Scanner</p>
+        <p>ISBN Scanner - Scan 1D/2D Code using Camera</p>
       </section>
     </footer>
 
@@ -107,6 +104,9 @@
                 if (bookData) {
                     displayBookInfo(bookData);
                     console.log(bookData.title);
+                    let authors = bookData.authors ? `Author: ${bookData.authors.map(author => author.name).join(', ')}` : '';
+                    BookDataList.push({isbn: isbn, title: bookData.title, publish_date: bookData.publish_date, author: authors});
+                  console.log(BookDataList);
                     // document.getElementById('test').innerHTML = bookData;
                     document.getElementById('book_title').innerHTML = bookData.title;
                 } else {
@@ -123,7 +123,7 @@
 
         // Display the book's title, author, and other information
         li.innerHTML = `<strong>${bookData.title}</strong><br>
-                        ${bookData.authors ? `Author: ${bookData.authors.map(author => author.name).join(', ')}` : ''}<br>
+                        ${bookData.authors ? `${bookData.authors.map(author => author.name).join(', ')}` : ''}<br>
                         ${bookData.publish_date ? `Published: ${bookData.publish_date}` : ''}`;
 
         // Append the new list item to the list
@@ -136,9 +136,58 @@
       setTimeout(function() {
         document.getElementById("video").style.opacity=1.0;
         document.getElementById("video").style.border="1 px solid grey";
-      }, 500);
+      }, 300);
     }
+    ////// DOWNLOAD BUTTON
+    // Function to download the CSV file
+    const download = (data) => {
+        // Create a Blob with the CSV data and type
+        const blob = new Blob([data], { type: 'text/csv' });
 
+        // Create a URL for the Blob
+        const url = URL.createObjectURL(blob);
+
+        // Create an anchor tag for downloading
+        const a = document.createElement('a');
+
+        // Set the URL and download attribute of the anchor tag
+        a.href = url;
+        let date_str = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        a.download = 'scanned_books_'+date_str+'.csv';
+
+        // Trigger the download by clicking the anchor tag
+        a.click();
+    }
+    // Function to create a CSV string from an object
+    const csvmaker = (data) => {
+        // Get the keys (headers) of the object
+        const headers = Object.keys(data[0]);
+
+        // Get the values of the object
+        const values = data.map(dict => (
+        headers.map(key => {
+          if (dict[key].includes(',')) {
+            return `"${dict[key]}"`;
+          }
+
+          return dict[key];
+        }).join(',')
+      ));
+
+        // Join the headers and values with commas and newlines to create the CSV string
+        return [headers.join(','), values.join('\n')].join('\n');
+    }
+    // Asynchronous function to fetch data and download the CSV file
+    const get = async () => {
+        // Create the CSV string from the data
+        const csvdata = csvmaker(BookDataList);
+
+        // Download the CSV file
+        download(csvdata);
+    }
+    document.getElementById('downloadButton').addEventListener('click', get);
+
+    ////// DOWNLOAD BUTTON
     let ScannedISBNs = []; // Variable to store the scanned ISBNs
     let BookDataList = []; // Variable to store the book data
     window.addEventListener('load', function () {
@@ -194,6 +243,8 @@
             codeReader.reset()
             document.getElementById('result').textContent = '';
             document.getElementById('book_title').innerHTML = "";
+            document.getElementById("video").style.opacity=1.0;
+            document.getElementById("video").style.border="1 px solid grey";
             console.log('Reset.')
           })
 
