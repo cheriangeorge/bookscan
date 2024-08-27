@@ -104,7 +104,7 @@
                 if (bookData) {
                     displayBookInfo(bookData);
                     console.log(bookData.title);
-                    let authors = bookData.authors ? `Author: ${bookData.authors.map(author => author.name).join(', ')}` : '';
+                    let authors = bookData.authors ? `${bookData.authors.map(author => author.name).join(', ')}` : '';
                     BookDataList.push({isbn: isbn, title: bookData.title, publish_date: bookData.publish_date, author: authors});
                   console.log(BookDataList);
                     // document.getElementById('test').innerHTML = bookData;
@@ -123,7 +123,7 @@
 
         // Display the book's title, author, and other information
         li.innerHTML = `<strong>${bookData.title}</strong><br>
-                        ${bookData.authors ? `${bookData.authors.map(author => author.name).join(', ')}` : ''}<br>
+                        ${bookData.authors ? `Author: ${bookData.authors.map(author => author.name).join(', ')}` : ''}<br>
                         ${bookData.publish_date ? `Published: ${bookData.publish_date}` : ''}`;
 
         // Append the new list item to the list
