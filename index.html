@@ -220,11 +220,12 @@
             codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
               if (result) {
                 const scannedISBN = result.text;
-                document.getElementById("BigDot").style.color="red";
+                
                 // captureISBNtransition();
                 
                 if (!ScannedISBNs.includes(scannedISBN)) {
                   ScannedISBNs.push(scannedISBN);
+                  document.getElementById("BigDot").style.color="red";
                   // console.log(result)
                   document.getElementById('result').textContent = result.text
                   
